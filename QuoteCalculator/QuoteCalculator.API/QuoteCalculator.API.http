@@ -1,0 +1,51 @@
+@QuoteCalculator.API_HostAddress = http://localhost:5271/api
+
+POST {{QuoteCalculator.API_HostAddress}}/loan/
+Accept: application/json
+Content-Type: application/json
+{
+  "AmountRequired":"5000",
+  "Term":"2",
+  "Title":"Mr.",
+  "FirstName":"John",
+  "LastName": "Doe",
+  "DateOfBirth":"1900-01-01",
+  "Mobile":"0422111333",
+  "Email":"layton@gmail.com"
+}
+###
+
+PUT {{QuoteCalculator.API_HostAddress}}/loan/ab858933-5130-4721-8eef-8a3685a47543
+Accept: application/json
+Content-Type: application/json
+{
+  "loanApplicationPublicId": "ab858933-5130-4721-8eef-8a3685a47543",
+  "applicantId": 1,
+  "title": "Mr.",
+  "firstName": "John",
+  "lastName": "Doe",
+  "mobileNumber": "0422111332",
+  "email": "layton@gmail.com",
+  "amount": 5000.00,
+  "term": 24,
+  "productType": 1,
+  "establishmentFee": 300.00,
+  "totalRepayment": 5839.60,
+  "totalInterest": 539.60
+}
+
+###
+
+GET {{QuoteCalculator.API_HostAddress}}/producttype
+Accept: application/json
+
+###
+
+POST {{QuoteCalculator.API_HostAddress}}/loan/calculate
+Accept: application/json
+Content-Type: application/json
+{
+  "productTypeId": 2,
+  "amount": 5000,
+  "term": 24
+}

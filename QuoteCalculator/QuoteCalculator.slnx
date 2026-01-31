@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="QuoteCalculator.API/QuoteCalculator.API.csproj" />
+  <Project Path="QuoteCalculator.Application/QuoteCalculator.Application.csproj" />
+  <Project Path="QuoteCalculator.Domain/QuoteCalculator.Domain.csproj" />
+  <Project Path="QuoteCalculator.Infrastracture/QuoteCalculator.Infrastracture.csproj" />
+  <Project Path="QuoteCalculator.Tests/QuoteCalculator.Tests.csproj" />
+</Solution>
