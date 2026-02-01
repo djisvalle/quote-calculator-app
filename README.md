@@ -35,33 +35,48 @@ This project uses Entity Framework Core with Postgres. Follow these steps to res
 
 **2. Running the application**
 
-**Option A: Run via Visual Studio (Recommended)**
-  
-This is the most straightforward way to run the solution.
-1. Open the `QuoteCalculator.sln` file
-2. Ensure `QuoteCalculator.API` is set as the **Startup Project**
-3. Press **F5** or the **Play** button to start debugging.
-4. A console will open that will inform you that the API is running.
+- **Quote Calculator API**
 
-   * _For this project, Swagger is not enabled._
+    - **Option A: Run via Visual Studio (Recommended)**
+      
+        This is the most straightforward way to run the solution.
+        1. Open the `QuoteCalculator.sln` file
+        2. Ensure `QuoteCalculator.API` is set as the **Startup Project**
+        3. Press **F5** or the **Play** button to start debugging.
+        4. A console will open that will inform you that the API is running.
+        
+           * _For this project, Swagger is not enabled._
+    
+    - **Option B: Run via CLI**
+    
+        Use this if you are on VS Code, or you don't have Visual Studio installed.
+        1. Open your terminal/command prompt.
+        2. Navigate to the API project folder:
+        
+            ```
+            cd \QuoteCalculator\QuoteCalculator.API
+            ```
+        
+        3. Run the application:
+        
+            ```
+            dotnet run
+            ```
+        
+        4. The application will start (at `http://localhost:5271`).
 
-**Option B: Run via CLI**
+- **Quote Calculator Web App**
 
-Use this if you are on VS Code, or you don't have Visual Studio installed.
-1. Open your terminal/command prompt.
-2. Navigate to the API project folder:
+    - **Run via CLI**
 
-    ```
-    cd \QuoteCalculator\QuoteCalculator.API
-    ```
-
-3. Run the application:
-
-    ```
-    dotnet run
-    ```
-
-4. The application will start (at `http://localhost:5271`).
+        1. On VS Code, under the `quote-calculator-app` folder, run:
+     
+            ```
+            npm run dev
+            ```
+      
+        2. The application will start (at `http://localhost:5173)`.
+      
 
 ## Testing
 
