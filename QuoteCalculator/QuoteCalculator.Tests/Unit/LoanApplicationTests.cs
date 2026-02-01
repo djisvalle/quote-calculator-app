@@ -59,7 +59,7 @@ namespace QuoteCalculator.Tests.Unit
 
             var result = await _service.CalculateLoanDetailsAsync(dto);
 
-            result.TotalRepayment.Should().Be(5580.44m);
+            result.TotalRepayment.Should().Be(5580.4408m);
         }
 
         [Fact]
@@ -168,8 +168,8 @@ namespace QuoteCalculator.Tests.Unit
                 {
                     result.EstablishmentFee.Should().Be(300.00m);
                     result.InterestFee.Should().Be(0.0m);
-                    result.WeeklyRepayment.Should().Be(198.08m);
-                    result.MonthlyRepayment.Should().Be(858.33m);
+                    result.WeeklyRepayment.Should().Be(198.0769m);
+                    result.MonthlyRepayment.Should().Be(858.3333m);
                     result.TotalRepayment.Should().Be(10300.00m);
                 });
         }
@@ -237,6 +237,38 @@ namespace QuoteCalculator.Tests.Unit
                 Term = 12,
                 ProductTypeId = 1
             };
+            var result = await _service.CalculateLoanDetailsAsync(dto);
+            var totalFromMonthly = Math.Round(result.MonthlyRepayment * dto.Term, 4, MidpointRounding.AwayFromZero);
+            result.TotalRepayment.Should().BeApproximately(totalFromMonthly, 0.0001m);
+        }
+
+        [Fact]
+        public async Task CalculateLoan_WhenInterestTypeIsDeferred_ShouldReturnCalculatedLoan()
+        {
+            _productTypeRepository.GetByIdAsync(1).Returns(new ProductType
+            {
+                ProductTypeId = 1,
+                ProductName = "Personal Loan",
+                InterestType = 2,
+                InterestRate = 5.0m,
+                InterestFreeMonths = 6,
+                MinimumTerm = 1,
+                MaximumTerm = 24,
+                MinimumAmount = 1000,
+                MaximumAmount = 25000
+            });
+            _globalConfigurationRepository.GetByKeyAsync(ConfigurationKeys.EstablishmentFee.ToString()).Returns(new GlobalConfiguration
+            {
+                Key = ConfigurationKeys.EstablishmentFee.ToString(),
+                Value = "300"
+            });
+            var dto = new CalculateLoanRequestDto
+            {
+                Amount = 15000,
+                Term = 24,
+                ProductTypeId = 1
+            };
+
             var result = await _service.CalculateLoanDetailsAsync(dto);
             var totalFromMonthly = Math.Round(result.MonthlyRepayment * dto.Term, 4, MidpointRounding.AwayFromZero);
             result.TotalRepayment.Should().Be(totalFromMonthly);

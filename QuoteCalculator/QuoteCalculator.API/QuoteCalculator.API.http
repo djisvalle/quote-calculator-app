@@ -37,7 +37,7 @@ Content-Type: application/json
 ###
 
 GET {{QuoteCalculator.API_HostAddress}}/producttype
-Accept: application/json
+
 
 ###
 

@@ -159,30 +159,30 @@ namespace QuoteCalculator.Application.Services
             if (productType.InterestType == (int)InterestTypes.Deferred)
             {
                 int interestFreeMonths = productType.InterestFreeMonths;
-                decimal interestFreeMonthlyRepayment = pv / nper;
-                decimal interestFreeTotalRepayment = interestFreeMonthlyRepayment * interestFreeMonths;
-
-                decimal balance = pv - interestFreeTotalRepayment;
-
                 int withInterestMonths = nper - interestFreeMonths;
-                PMT = (decimal)Math.Abs(Financial.Pmt((double)rate, withInterestMonths, (double)balance, 0, 0));
+
+                double annuity = (1 - Math.Pow(1 + (double)rate, -withInterestMonths)) / (double)rate;
+                PMT = pv / (decimal)(interestFreeMonths + annuity);
             }
             else PMT = (decimal)Math.Abs(Financial.Pmt((double)rate, nper, (double)pv, 0, 0));
 
-            decimal monthlyPayment = Math.Round(PMT, 4, MidpointRounding.ToEven);
+            decimal monthlyPayment = PMT;
             decimal totalRepayment = monthlyPayment * nper;
-            decimal weeklyPayment = Math.Round(totalRepayment / (weeksInMonth * nper), 4, MidpointRounding.AwayFromZero);
+            decimal weeklyPayment = totalRepayment / (weeksInMonth * nper);
             decimal interestFee = totalRepayment - pv;
+
+            var roundedTotal = Math.Round(totalRepayment, 4, MidpointRounding.AwayFromZero);
+            var roundedEstablishment = Math.Round(establishmentFee, 4, MidpointRounding.AwayFromZero);
 
             return new CalculateLoanResponseDto
             {
                 Amount = dto.Amount,
                 Term = dto.Term,
-                EstablishmentFee = establishmentFee,
-                InterestFee = interestFee,
-                WeeklyRepayment = weeklyPayment,
-                MonthlyRepayment = monthlyPayment,
-                TotalRepayment = totalRepayment
+                EstablishmentFee = roundedEstablishment,
+                InterestFee = Math.Round(interestFee, 4, MidpointRounding.AwayFromZero),
+                WeeklyRepayment = Math.Round(weeklyPayment, 4, MidpointRounding.AwayFromZero),
+                MonthlyRepayment = Math.Round(monthlyPayment, 4, MidpointRounding.AwayFromZero),
+                TotalRepayment = roundedTotal
             };         
         }
 
