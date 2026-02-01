@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using NSubstitute;
 using QuoteCalculator.Application.DTOs.Loan.Request;
 using QuoteCalculator.Application.Enums;
 using QuoteCalculator.Application.Services;
 using QuoteCalculator.Domain.Entities;
 using QuoteCalculator.Domain.Repositories;
+using System.ComponentModel.DataAnnotations;
 using Xunit;
 
 namespace QuoteCalculator.Tests.Unit
@@ -272,6 +274,142 @@ namespace QuoteCalculator.Tests.Unit
             var result = await _service.CalculateLoanDetailsAsync(dto);
             var totalFromMonthly = Math.Round(result.MonthlyRepayment * dto.Term, 4, MidpointRounding.AwayFromZero);
             result.TotalRepayment.Should().Be(totalFromMonthly);
+        }
+
+        [Fact]
+        public async Task FinalizeLoan_WhenEmailIsBlacklisted_ShouldBeRejected()
+        {
+            var blacklistedEmail = new Blacklist
+            {
+                BlacklistId = 1,
+                BlacklistType = (int)BlacklistTypes.EmailDomain,
+                Value = "@blacklisted.org"
+            };
+
+            var applicant = new Applicant
+            {
+                ApplicantId = 1,
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "john.doe@blacklisted.org",
+                DateOfBirth = new DateOnly(1990, 1, 1)
+            };
+
+            var productType = new ProductType
+            {
+                ProductTypeId = 1,
+                InterestType = 0
+            };
+
+            var application = new LoanApplication
+            {
+                LoanApplicationId = 1,
+                LoanApplicationPublicId = new Guid(),
+                ApplicantId = 1,
+                ProductType = 1,
+                Amount = 5000,
+                Term = 12,
+                EstablishmentFee = 300m,
+                InterestFee = 5m,
+                WeeklyRepayment = 104.7045m,
+                MonthlyRepayment = 453.7197m,
+                TotalRepayment = 5444.6358m,
+                CreatedAt = DateTime.UtcNow,
+                Status = (int)ApplicationStatus.Pending
+            };
+
+            _loanApplicationRepository.GetByPublicIdAsync(application.LoanApplicationPublicId).Returns(application);
+            _applicantRepository.GetByIdAsync(applicant.ApplicantId).Returns(applicant);
+            _productTypeRepository.GetByIdAsync(productType.ProductTypeId).Returns(productType);
+            _blacklistRepository.IsEmailDomainBlacklistedAsync(applicant.Email).Returns(true);
+
+            var dto = new FinalizeLoanRequestDto
+            {
+                LoanApplicationPublicId = application.LoanApplicationPublicId,
+                ApplicantId = applicant.ApplicantId,
+                FirstName = applicant.FirstName,
+                LastName = applicant.LastName,
+                MobileNumber = applicant.MobileNumber,
+                Email = applicant.Email,
+                Amount = application.Amount,
+                Term = application.Term,
+                InterestFee = application.InterestFee,
+                WeeklyRepayment = application.WeeklyRepayment,
+                MonthlyRepayment = application.MonthlyRepayment,
+                TotalRepayment = application.TotalRepayment
+            };
+
+            await _service.FinalizeLoanAsync(dto);
+            application.Status.Should().Be((int)ApplicationStatus.Rejected);
+            application.Remarks.Should().Be("Applicant's email domain is blacklisted.");
+        }
+
+        [Fact]
+        public async Task FinalizeLoan_WhenApplicantIsUnderage_ShouldBeRejected()
+        {
+            var blacklistedEmail = new Blacklist
+            {
+                BlacklistId = 1,
+                BlacklistType = (int)BlacklistTypes.EmailDomain,
+                Value = "@blacklisted.org"
+            };
+
+            var applicant = new Applicant
+            {
+                ApplicantId = 1,
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "john.doe@gmail.org",
+                DateOfBirth = new DateOnly(2010, 1, 1)
+            };
+
+            var productType = new ProductType
+            {
+                ProductTypeId = 1,
+                InterestType = 0
+            };
+
+            var application = new LoanApplication
+            {
+                LoanApplicationId = 1,
+                LoanApplicationPublicId = new Guid(),
+                ApplicantId = 1,
+                ProductType = 1,
+                Amount = 5000,
+                Term = 12,
+                EstablishmentFee = 300m,
+                InterestFee = 5m,
+                WeeklyRepayment = 104.7045m,
+                MonthlyRepayment = 453.7197m,
+                TotalRepayment = 5444.6358m,
+                CreatedAt = DateTime.UtcNow,
+                Status = (int)ApplicationStatus.Pending
+            };
+
+            _loanApplicationRepository.GetByPublicIdAsync(application.LoanApplicationPublicId).Returns(application);
+            _applicantRepository.GetByIdAsync(applicant.ApplicantId).Returns(applicant);
+            _productTypeRepository.GetByIdAsync(productType.ProductTypeId).Returns(productType);
+            _blacklistRepository.IsEmailDomainBlacklistedAsync(applicant.Email).Returns(false);
+
+            var dto = new FinalizeLoanRequestDto
+            {
+                LoanApplicationPublicId = application.LoanApplicationPublicId,
+                ApplicantId = applicant.ApplicantId,
+                FirstName = applicant.FirstName,
+                LastName = applicant.LastName,
+                MobileNumber = applicant.MobileNumber,
+                Email = applicant.Email,
+                Amount = application.Amount,
+                Term = application.Term,
+                InterestFee = application.InterestFee,
+                WeeklyRepayment = application.WeeklyRepayment,
+                MonthlyRepayment = application.MonthlyRepayment,
+                TotalRepayment = application.TotalRepayment
+            };
+
+            await _service.FinalizeLoanAsync(dto);
+            application.Status.Should().Be((int)ApplicationStatus.Rejected);
+            application.Remarks.Should().Be("Applicant is underage.");
         }
 
         [Theory]
